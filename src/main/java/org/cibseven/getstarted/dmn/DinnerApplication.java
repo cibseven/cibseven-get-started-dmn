@@ -16,11 +16,36 @@
  */
 package org.cibseven.getstarted.dmn;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.cibseven.bpm.application.PostDeploy;
 import org.cibseven.bpm.application.ProcessApplication;
 import org.cibseven.bpm.application.impl.JakartaServletProcessApplication;
+import org.cibseven.bpm.dmn.engine.DmnDecisionTableResult;
+import org.cibseven.bpm.engine.DecisionService;
+import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.variable.VariableMap;
+import org.cibseven.bpm.engine.variable.Variables;
 
 @ProcessApplication("Dinner App DMN")
 public class DinnerApplication extends JakartaServletProcessApplication
 {
-  //empty implementation
+    protected final static Logger LOGGER = Logger.getLogger(DinnerApplication.class.getName());
+
+    @PostDeploy
+    public void evaluateDecisionTable(ProcessEngine processEngine) {
+
+      DecisionService decisionService = processEngine.getDecisionService();
+
+      VariableMap variables = Variables.createVariables()
+        .putValue("season", "Spring")
+        .putValue("guestCount", 10);
+
+      DmnDecisionTableResult dishDecisionResult = decisionService.evaluateDecisionTableByKey("dish", variables);
+      String desiredDish = dishDecisionResult.getSingleEntry();
+
+      LOGGER.log(Level.INFO, "\n\nDesired dish: {0}\n\n", desiredDish);
+    }
+
 }
